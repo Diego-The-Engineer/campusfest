@@ -13,11 +13,17 @@ function pad(number) {
   return String(number).padStart(2, '0');
 }
 
+function normalizeText(str) {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
 // ---------- Cupos ----------
 
 export function spotsLeft(event) {
-  if(event.capacity - event.registered < 0) return 0;
-  return event.capacity - event.registered;
+  return Math.max(0, event.capacity - event.registered);
 }
 
 export function isFull(event) {
@@ -28,12 +34,16 @@ export function spotsLabel(event) {
   if (isFull(event)) {
     return 'Cupo lleno';
   }
-  return `${spotsLeft(event)} lugares`;
+  const left = spotsLeft(event);
+  return left === 1 ? '1 lugar' : `${left} lugares`;
 }
 
 // ---------- Precio ----------
 
 export function formatPrice(price) {
+  if (price === 0) {
+    return 'Gratis';
+  }
   return `$${price}`;
 }
 
@@ -41,7 +51,7 @@ export function formatPrice(price) {
 
 export function formatShortDate(dateStr) {
   const date = toDate(dateStr);
-  return `${pad(date.getDate())}/${pad(date.getMonth())}`;
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}`;
 }
 
 export function weekdayName(dateStr) {
@@ -54,6 +64,9 @@ export function daysUntil(dateStr, todayStr) {
 
 export function countdownLabel(dateStr, todayStr) {
   const days = daysUntil(dateStr, todayStr);
+  if (days < 0) {
+    return 'Finalizado';
+  }
   if (days === 0) {
     return 'Hoy';
   }
@@ -79,15 +92,7 @@ export function filterEvents(events, { query = '', category = 'todas', day = nul
   });
 }
 
-function normalizeText(str) {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
-
 export function matchesSearch(event, query) {
   const text = normalizeText(`${event.title} ${event.venue} ${event.categoryLabel}`);
   return text.includes(normalizeText(query.trim()));
 }
-
