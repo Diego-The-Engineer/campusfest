@@ -16,11 +16,12 @@ function pad(number) {
 // ---------- Cupos ----------
 
 export function spotsLeft(event) {
+  if(event.capacity - event.registered < 0) return 0;
   return event.capacity - event.registered;
 }
 
 export function isFull(event) {
-  return spotsLeft(event) === 0;
+  return spotsLeft(event) <= 0;
 }
 
 export function spotsLabel(event) {
